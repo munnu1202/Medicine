@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Todo App</title>
+  <title>To-Do App</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,16 +11,15 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
       background-color: #f4f4f4;
+      margin: 0;
     }
-    .container {
-      background: white;
+    .todo-container {
+      background-color: white;
+      width: 300px;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     h1 {
       text-align: center;
@@ -30,88 +29,134 @@
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f9f9f9;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 4px;
-    }
-    li span {
-      flex-grow: 1;
-      word-wrap: break-word;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
     button {
-      background-color: #ff5733;
-      border: none;
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
       color: white;
-      padding: 6px 10px;
-      border-radius: 4px;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #e74c3c;
+      background-color: #45a049;
     }
-    .completed {
-      text-decoration: line-through;
+    .todo-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .todo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    .todo-item button {
+      background-color: red;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .todo-item button:hover {
+      background-color: darkred;
+    }
+    .todo-time {
+      font-size: 0.8em;
       color: #888;
+    }
+    .edit-btn {
+      background-color: orange;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      border: none;
+    }
+    .edit-btn:hover {
+      background-color: darkorange;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Todo List</h1>
-    <input type="text" id="todoInput" placeholder="Add a new task" />
-    <ul id="todoList"></ul>
+  <div class="todo-container">
+    <h1>To-Do List</h1>
+    <input type="text" id="todo-input" placeholder="Add a new task...">
+    <button id="add-btn">Add Task</button>
+    <ul class="todo-list" id="todo-list"></ul>
   </div>
 
   <script>
-    const todoInput = document.getElementById("todoInput");
-    const todoList = document.getElementById("todoList");
+    const addButton = document.getElementById('add-btn');
+    const inputField = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
 
-    // Add new todo item
-    todoInput.addEventListener("keydown", function(event) {
-      if (event.key === "Enter" && todoInput.value.trim() !== "") {
-        const todoText = todoInput.value.trim();
-        addTodoItem(todoText);
-        todoInput.value = ""; // Clear input after adding
+    // Function to format the current time
+    function getCurrentTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const hour = hours % 12 || 12; // Convert 24-hour to 12-hour format
+      const minute = minutes < 10 ? '0' + minutes : minutes;
+      return `${hour}:${minute} ${ampm}`;
+    }
+
+    // Add task to the list
+    function addTask() {
+      const taskText = inputField.value.trim();
+      if (taskText === '') {
+        alert('Please enter a task.');
+        return;
       }
-    });
 
-    // Add a todo item to the list
-    function addTodoItem(todoText) {
-      const li = document.createElement("li");
+      const timeAdded = getCurrentTime();
+      const li = document.createElement('li');
+      li.classList.add('todo-item');
+      li.innerHTML = `
+        <span class="task-text">${taskText}</span> 
+        <span class="todo-time">Added at: ${timeAdded}</span>
+        <button class="edit-btn">Edit</button>
+        <button class="delete-btn">Delete</button>
+      `;
+      todoList.appendChild(li);
 
-      const span = document.createElement("span");
-      span.textContent = todoText;
+      // Clear input field
+      inputField.value = '';
 
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.onclick = function() {
-        li.remove();
-      };
-
-      li.appendChild(span);
-      li.appendChild(deleteBtn);
-
-      // Mark todo as completed
-      span.addEventListener("click", function() {
-        span.classList.toggle("completed");
+      // Attach delete functionality
+      const deleteButton = li.querySelector('.delete-btn');
+      deleteButton.addEventListener('click', () => {
+        todoList.removeChild(li);
       });
 
-      todoList.appendChild(li);
+      // Attach edit functionality
+      const editButton = li.querySelector('.edit-btn');
+      editButton.addEventListener('click', () => {
+        const taskTextElement = li.querySelector('.task-text');
+        const newTaskText = prompt('Edit task:', taskTextElement.textContent);
+        if (newTaskText !== null && newTaskText.trim() !== '') {
+          taskTextElement.textContent = newTaskText.trim();
+        }
+      });
     }
-  </script>
 
+    // Listen for 'Add Task' button click
+    addButton.addEventListener('click', addTask);
+
+    // Allow pressing Enter key to add task
+    inputField.addEventListener('keypress', function(event) {
+      if (event.key === 'Enter') {
+        addTask();
+      }
+    });
+  </script>
+  
 </body>
 </html>
